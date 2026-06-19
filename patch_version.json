@@ -1,0 +1,22 @@
+{
+  "patch_version": "1.0.0",
+  "patched_fcc_version": "1.2.41",
+  "last_updated": "2026-06-19",
+  "patched_apis": {
+    "execute_with_retry": {
+      "file": "providers/rate_limit.py",
+      "params": ["fn", "max_retries", "base_delay", "max_delay", "jitter"],
+      "notes": "Patches retry logic for immediate 429 swap"
+    },
+    "_create_stream": {
+      "file": "providers/nvidia_nim/client.py",
+      "params": ["body"],
+      "notes": "Patches for proactive rotation + console logging"
+    },
+    "map_error": {
+      "file": "providers/error_mapping.py",
+      "params": ["e", "rate_limiter"],
+      "notes": "Patches to use 5s block instead of 60s"
+    }
+  }
+}

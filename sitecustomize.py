@@ -4,10 +4,15 @@ import random
 import sys
 import threading
 import time
+import inspect
 
 _ENV_FILE = os.path.join(os.environ.get("USERPROFILE", ""), ".fcc", ".env")
 _MAX_REQ = 35
 _DBG = os.path.join(os.environ.get("USERPROFILE", ""), ".fcc", "nim_patch.log")
+
+# Version tracking - update when patching new FCC versions
+PATCH_VERSION = "1.0.0"
+PATCHED_FCC_VERSION = "1.2.41"  # Version this patch was designed for
 
 _NIM_KEY_ENVS = [
     "NVIDIA_NIM_API_KEY",
@@ -19,6 +24,73 @@ _NIM_KEY_ENVS = [
 def _log(msg):
     with open(_DBG, "a") as f:
         f.write(f"[{time.strftime('%H:%M:%S')}] {msg}\n")
+
+
+def _get_fcc_version():
+    """Get installed FCC version from package metadata."""
+    try:
+        import importlib.metadata
+        return importlib.metadata.version("free-claude-code")
+    except Exception:
+        pass
+    # Fallback: scan dist-info directories
+    try:
+        site_packages = [p for p in sys.path if "site-packages" in p][0]
+        for d in os.listdir(site_packages):
+            if d.startswith("free_claude_code-") and d.endswith(".dist-info"):
+                return d.replace("free_claude_code-", "").replace(".dist-info", "")
+    except Exception:
+        pass
+    return None
+
+
+def _check_api_compat():
+    """Check if patched APIs still have expected signatures."""
+    issues = []
+    try:
+        from providers.rate_limit import GlobalRateLimiter
+        sig = inspect.signature(GlobalRateLimiter.execute_with_retry)
+        params = list(sig.parameters.keys())
+        if "fn" not in params:
+            issues.append("execute_with_retry missing 'fn' param")
+        if "max_retries" not in params:
+            issues.append("execute_with_retry missing 'max_retries' param")
+    except Exception as e:
+        issues.append(f"execute_with_retry check failed: {e}")
+
+    try:
+        from providers.nvidia_nim.client import NvidiaNimProvider
+        if not hasattr(NvidiaNimProvider, "_create_stream"):
+            issues.append("_create_stream method not found")
+    except Exception as e:
+        issues.append(f"_create_stream check failed: {e}")
+
+    try:
+        from providers import error_mapping as em
+        if not callable(getattr(em, "map_error", None)):
+            issues.append("map_error function not found")
+    except Exception as e:
+        issues.append(f"map_error check failed: {e}")
+
+    return issues
+
+
+def _version_check():
+    """Check FCC version and API compatibility."""
+    installed = _get_fcc_version()
+    _log(f"FCC version: {installed} (patch designed for: {PATCHED_FCC_VERSION})")
+
+    if installed and installed != PATCHED_FCC_VERSION:
+        _log(f"WARNING: Version mismatch! Installed={installed}, Patched={PATCHED_FCC_VERSION}")
+        _log("Patches may not work correctly. Re-run install.ps1 or update sitecustomize.py")
+
+    issues = _check_api_compat()
+    if issues:
+        for issue in issues:
+            _log(f"API COMPAT ISSUE: {issue}")
+        _log("Some patches may not apply correctly")
+    else:
+        _log("API compatibility check passed")
 
 
 def _load_env_file():
@@ -38,6 +110,7 @@ def _load_env_file():
 
 def _patch_nim():
     _log("patch_nim started")
+    _version_check()
     for i in range(120):
         try:
             from providers.nvidia_nim.client import NvidiaNimProvider
