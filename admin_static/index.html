@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Free Claude Code Admin</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="/admin/assets/admin.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-mark">FC</div>
+          <div>
+            <h1>Free Claude Code</h1>
+            <p>Server Control</p>
+          </div>
+        </div>
+        <nav id="sectionNav" class="section-nav" aria-label="Admin views"></nav>
+      </aside>
+
+      <main class="main">
+        <header class="topbar">
+          <div>
+            <h2 id="pageTitle">Providers</h2>
+          </div>
+        </header>
+
+        <div id="adminViews" class="admin-views">
+          <section id="view-providers" class="admin-view active" data-view="providers">
+            <section class="provider-strip" aria-label="Provider status">
+              <div class="strip-header">
+                <h3>Providers</h3>
+              </div>
+              <div id="providerGrid" class="provider-grid"></div>
+            </section>
+            <div
+              id="providersSections"
+              class="form-sections"
+              aria-label="Provider configuration"
+            ></div>
+          </section>
+
+          <section id="view-model_config" class="admin-view" data-view="model_config" hidden>
+            <div
+              id="modelConfigSections"
+              class="form-sections"
+              aria-label="Model configuration"
+            ></div>
+          </section>
+
+          <section id="view-messaging" class="admin-view" data-view="messaging" hidden>
+            <div
+              id="messagingSections"
+              class="form-sections"
+              aria-label="Messaging configuration"
+            ></div>
+          </section>
+
+          <section id="view-nim_tester" class="admin-view" data-view="nim_tester" hidden>
+            <div class="nim-tester-container">
+              <div class="nim-top-bar">
+                <div class="nim-search-box">
+                  <input id="nimSearch" type="text" placeholder="Search models..." class="nim-search-input" />
+                  <span id="nimModelCount" class="nim-model-count"></span>
+                </div>
+                <div class="nim-top-actions">
+                  <button id="nimSelectAll" class="ghost-button" type="button">Select All</button>
+                  <button id="nimSelectNone" class="ghost-button" type="button">None</button>
+                  <button id="nimRefreshModels" class="primary-button" type="button">Refresh</button>
+                </div>
+              </div>
+
+              <div class="nim-main-layout">
+                <div class="nim-left-panel">
+                  <div class="nim-panel-header">
+                    <span>Models</span>
+                    <span id="nimSelectedCount" class="nim-selected-badge">0 selected</span>
+                  </div>
+                  <div id="nimModelsList" class="nim-models-list"></div>
+                </div>
+
+                <div class="nim-right-panel">
+                  <div class="nim-panel-header">
+                    <span>Test Results</span>
+                    <button id="nimTestAll" class="primary-button nim-test-btn" type="button">Test All Selected</button>
+                  </div>
+                  <div id="nimTestResults" class="nim-results-table">
+                    <div class="nim-results-empty">Select models and click Test</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="nim-saved-section">
+                <div class="nim-panel-header">
+                  <span>Saved Lists</span>
+                  <div class="nim-save-controls">
+                    <input id="nimListName" type="text" placeholder="List name..." class="nim-save-input" />
+                    <button id="nimSaveList" class="primary-button" type="button">Save</button>
+                  </div>
+                </div>
+                <div id="nimSavedLists" class="nim-saved-lists"></div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <footer class="action-bar">
+        <div class="action-meta">
+          <strong id="dirtyState">No changes</strong>
+          <span id="configPath"></span>
+        </div>
+        <div id="messageArea" class="message-area"></div>
+        <div class="action-buttons">
+          <button id="validateButton" class="secondary-button" type="button">Validate</button>
+          <button id="applyButton" class="primary-button" type="button" disabled>Apply</button>
+        </div>
+      </footer>
+    </div>
+    <script src="/admin/assets/admin.js"></script>
+  </body>
+</html>

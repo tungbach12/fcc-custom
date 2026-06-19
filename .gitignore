@@ -1,0 +1,37 @@
+# Environment files (NEVER commit)
+.env
+.env.local
+.env.*.local
+*.env
+
+# FCC config (contains secrets)
+~/.fcc/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+.venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Build
+dist/
+build/
+*.egg-info/
