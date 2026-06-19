@@ -5,8 +5,12 @@ $ErrorActionPreference = "SilentlyContinue"
 
 Write-Host "FCC Custom - Checking for updates..." -ForegroundColor Cyan
 
-# Get installed FCC version
-$installedVersion = & uv run python -c "import importlib.metadata; print(importlib.metadata.version('free-claude-code'))" 2>$null
+# Get installed FCC version (FCC is a uv tool, need to find its dist-info)
+$installedVersion = "unknown"
+$distInfo = Get-ChildItem "$env:APPDATA\uv\tools\free-claude-code\Lib\site-packages\free_claude_code-*.dist-info" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($distInfo) {
+    $installedVersion = $distInfo.Name -replace "free_claude_code-", "" -replace ".dist-info", ""
+}
 Write-Host "Installed FCC version: $installedVersion" -ForegroundColor Gray
 
 # Check upstream (Alishahryar1/free-claude-code)
@@ -46,8 +50,12 @@ if ($custom) {
 # Check patch compatibility
 Write-Host ""
 Write-Host "Checking patch compatibility..." -ForegroundColor Yellow
-$compatResult = & uv run python -c "
-import sys, inspect
+$compatResult = & python -c "
+import sys, inspect, os
+# Add FCC site-packages to path
+fcc_path = os.path.join(os.environ.get('APPDATA', ''), 'uv', 'tools', 'free-claude-code', 'Lib', 'site-packages')
+if os.path.exists(fcc_path):
+    sys.path.insert(0, fcc_path)
 try:
     from providers.rate_limit import GlobalRateLimiter
     sig = inspect.signature(GlobalRateLimiter.execute_with_retry)

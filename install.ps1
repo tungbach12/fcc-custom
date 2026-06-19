@@ -15,8 +15,12 @@ if (-not (Get-Command uv -ErrorAction SilentlyContinue)) {
 Write-Host "Installing Free Claude Code..." -ForegroundColor Green
 uv tool install free-claude-code --force
 
-# Get installed version
-$installedVersion = & uv run python -c "import importlib.metadata; print(importlib.metadata.version('free-claude-code'))" 2>$null
+# Get installed version (FCC is a uv tool, find dist-info)
+$installedVersion = "unknown"
+$distInfo = Get-ChildItem "$env:APPDATA\uv\tools\free-claude-code\Lib\site-packages\free_claude_code-*.dist-info" -ErrorAction SilentlyContinue | Select-Object -First 1
+if ($distInfo) {
+    $installedVersion = $distInfo.Name -replace "free_claude_code-", "" -replace ".dist-info", ""
+}
 Write-Host "Installed FCC version: $installedVersion" -ForegroundColor Gray
 
 # Check patch compatibility
@@ -78,8 +82,12 @@ if (-not (Test-Path $envFile)) {
 # Test patch application
 Write-Host ""
 Write-Host "Testing patch application..." -ForegroundColor Cyan
-$testResult = & uv run python -c "
-import sys, importlib.metadata
+$testResult = & python -c "
+import sys, os
+# Add FCC site-packages to path
+fcc_path = os.path.join(os.environ.get('APPDATA', ''), 'uv', 'tools', 'free-claude-code', 'Lib', 'site-packages')
+if os.path.exists(fcc_path):
+    sys.path.insert(0, fcc_path)
 try:
     from providers.rate_limit import GlobalRateLimiter
     from providers.nvidia_nim.client import NvidiaNimProvider
